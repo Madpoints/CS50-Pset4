@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     bi.biWidth *= n;
     // determine padding for output file scanlines
     int padding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
-    bi.biHeight *= n;
+    //bi.biHeight *= n;
     bi.biSizeImage = ((sizeof(RGBTRIPLE) * bi.biWidth) + padding) * abs(bi.biHeight);
     bf.bfSize = bi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
 
@@ -95,23 +95,28 @@ int main(int argc, char *argv[])
 
             // pset note: use loop to write the pixel horizontally n times to the outfile
             // write RGB triple to outfile
-            for (int k = 0; k < bi.biWidth; k++) {
+            for (int k = 0; k < bi.biWidth; k++)
+            {
                 fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
             }
 
         }
-        // pset note: add padding if necessary?
-
         // pset note: use loop to write each line of the image n times
-
-        // skip over padding, if any
-        fseek(inptr, oldPadding, SEEK_CUR);
 
         // then add it back (to demonstrate how)
         for (int k = 0; k < padding; k++)
         {
             fputc(0x00, outptr);
         }
+
+        // skip over padding, if any
+        fseek(inptr, oldPadding, SEEK_CUR);
+
+        // // then add it back (to demonstrate how)
+        // for (int k = 0; k < padding; k++)
+        // {
+        //     fputc(0x00, outptr);
+        // }
     }
 
     // close infile
