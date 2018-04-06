@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     char *outfile = argv[3];
 
     // remember resize number
-    int n = atoi(argv[1]);
+    int resize = atoi(argv[1]);
 
     // open input file
     FILE *inptr = fopen(infile, "r");
@@ -58,18 +58,18 @@ int main(int argc, char *argv[])
     }
 
     // save input file header info
-    // determine padding for input file scanlines
+    int oldWidth = bi.biWidth;
+    int oldHeight = abs(bi.biHeight);
+
+    //calculate padding for infile
     int oldPadding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
-    int oldBiWidth = bi.biWidth;
-    int oldBiHeight = abs(bi.biHeight);
 
-    // pset note: save infile size data, adjust infile size data by n for outfile
-    bi.biWidth *= n;
+    // update output file header info
+    bi.biWidth *= resize;
+    bi.biHeight *= resize;
 
-    // determine padding for output file scanlines
+    // calculate padding for outfile
     int padding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
-
-    bi.biHeight *= n;
     bi.biSizeImage = ((sizeof(RGBTRIPLE) * bi.biWidth) + padding) * abs(bi.biHeight);
     bf.bfSize = bi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
 
@@ -80,14 +80,15 @@ int main(int argc, char *argv[])
     fwrite(&bi, sizeof(BITMAPINFOHEADER), 1, outptr);
 
     // iterate over infile's scanlines
-    for (int i = 0; i < oldBiHeight; i++)
+    for (int row = 0; row < oldHeight; row++)
     {
 
-        for (int m = 0; m < n -1; m++)
+        // resize vertically
+        for (int i = 0; i < resize - 1; i++)
         {
 
             // iterate over pixels in scanline
-            for (int j = 0; j < oldBiWidth; j++)
+            for (int pixel = 0; pixel < oldWidth; pixel++)
             {
 
                 // temporary storage
@@ -96,25 +97,24 @@ int main(int argc, char *argv[])
                 // read RGB triple from infile
                 fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
 
-                // write RGB triple to outfile n number of times
-                for (int k = 0; k < n; k++)
+                // resize horizontally
+                for (int j = 0; j < resize; j++)
                 {
                     fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
                 }
-
             }
 
             // add padding, if any
-            for (int l = 0; l < padding; l++)
+            for (int k = 0; k < padding; k++)
             {
                 fputc(0x00, outptr);
             }
 
-            fseek(inptr, -(bi.biWidth), SEEK_CUR);
+            fseek(inptr, -(oldWidth * sizeof(RGBTRIPLE)), SEEK_CUR);
         }
 
         // iterate over pixels in scanline
-        for (int j = 0; j < oldBiWidth; j++)
+        for (int pixel = 0; pixel < oldWidth; pixel++)
         {
 
             // temporary storage
@@ -124,19 +124,17 @@ int main(int argc, char *argv[])
             fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
 
             // write RGB triple to outfile n number of times
-            for (int k = 0; k < n; k++)
+            for (int j = 0; j < resize; j++)
             {
                 fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
             }
-
         }
 
         // add padding, if any
-        for (int l = 0; l < padding; l++)
+        for (int k = 0; k < padding; k++)
         {
             fputc(0x00, outptr);
         }
-
 
         // skip over infile padding, if any
         fseek(inptr, oldPadding, SEEK_CUR);
