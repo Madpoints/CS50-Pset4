@@ -1,18 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef unsigned char BYTE;
 
 int main(int argc, char *argv[])
 {
     // ensure proper usage
     if (argc != 2)
     {
-        fprintf(stderr, "Usage: recover infile\n");
+        fprintf(stderr, "Usage: recover memory_card\n");
         return 1;
     }
 
-    // open input file
+    // open memory card file
     FILE* memCard = fopen(argv[1], "r");
     if (memCard == NULL)
     {
@@ -20,14 +19,19 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    int counter = 1;
+    // counter for JPEG files
+    int counter = 0;
 
+    // while not at the end of the file
     while(!feof(memCard))
     {
+        // buffer for 512 bytes
+        unsigned char buffer[512];
 
-        BYTE buffer[512];
+        // read file 1 byte at a time, 512 times
         fread(&buffer, 1, 512, memCard);
 
+        // if the bytes correspond to a JPEG header
         if (buffer[0] == 0xff &&
             buffer[1] == 0xd8 &&
             buffer[2] == 0xff &&
@@ -38,6 +42,8 @@ int main(int argc, char *argv[])
         }
 
     }
+
+    fclose(memCard);
 
     return 0;
 }
