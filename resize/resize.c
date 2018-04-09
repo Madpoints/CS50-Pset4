@@ -110,6 +110,7 @@ int main(int argc, char *argv[])
                 fputc(0x00, outptr);
             }
 
+            // move infile cursor back to beginning of scanline
             fseek(inptr, -(oldWidth * sizeof(RGBTRIPLE)), SEEK_CUR);
         }
 
