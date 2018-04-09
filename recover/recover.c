@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
     // while not at the end of the memory card file
     while(!feof(memCard))
     {
-        // if not at the last block of memory
-        // store block of memory in buffer
+        // read from memory card file into buffer
+        // if not at that last block of memory
         if (fread(buffer, 1, sizeof(buffer), memCard) != 0)
         {
             // if the first four bytes correspond to a JPEG header
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    // cloes memory card file process complete
+    // close memory card file process complete
     fclose(memCard);
 
     return 0;
